@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:radio_player/radio_player.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,12 +32,23 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  RadioPlayer radioPlayer = RadioPlayer();
+  bool isPlaying = false;
+
+  @override
+  void initState() {
+    radioPlayer.stateStream.listen((value) {
+      setState(() {
+        isPlaying = value;
+      });
+    });
+
+    radioPlayer.setChannel(title: 'Jadiel', url: 'https://play.radio.br:8089/mncaxias/mncaxias/playlist.m3u8');
+    super.initState();
+  }
 
   void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+    (isPlaying) ? radioPlayer.pause() : radioPlayer.play();
   }
 
   @override
@@ -45,24 +57,25 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text('Radio App'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Esse funciona bem para os 2 formatos\nde arquivos e não contém widgets\nobrigatórios, porém não tem o\nprogresso de audio para\nexibir o timer e o life.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        tooltip: 'Play e pause',
+        child: Icon((isPlaying) ? Icons.pause_rounded : Icons.play_arrow_rounded),
       ),
     );
   }
