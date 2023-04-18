@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  assets_audio_player: ^3.0.6
+  audio_video_progress_bar: ^1.0.1
   cupertino_icons: ^1.0.5
 
 dev_dependencies:
