@@ -1,4 +1,7 @@
+import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
+
+import 'audio_player_adapter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,12 +34,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  final _player = AudioPlayerPlayer();
+  bool isPlaying = false;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  @override
+  void initState() {
+    _player.init();
+    _loadSong();
+    super.initState();
+  }
+
+  Future<void> _loadSong() async {
+    await _player.load(url: 'https://play.radio.br:8089/mncaxias/mncaxias/playlist.m3u8');
+
+    setState(() => isPlaying = true);
   }
 
   @override
@@ -46,24 +57,45 @@ class _MyHomePageState extends State<MyHomePage> {
         title: const Text('Radio App'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              StreamBuilder<Duration>(
+                stream: _player.totalDuration,
+                builder: (context, totalDurationSnapshot) {
+                  return StreamBuilder<Duration>(
+                    stream: _player.position,
+                    builder: (context, positionSnapshot) {
+                      return ProgressBar(
+                        progress: positionSnapshot.data ?? Duration.zero,
+                        total: totalDurationSnapshot.data ?? Duration.zero,
+                        onSeek: _player.seek,
+                      );
+                    },
+                  );
+                },
+              ),
+              FloatingActionButton(
+                onPressed: () {
+                  (isPlaying) ? _player.pause() : _player.play();
+
+                  setState(() => isPlaying = !isPlaying);
+                },
+                tooltip: 'Play e pause',
+                child: Icon((isPlaying) ? Icons.pause_rounded : Icons.play_arrow_rounded),
+              ),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
     );
+  }
+
+  @override
+  void dispose() {
+    _player.dispose();
+    super.dispose();
   }
 }
